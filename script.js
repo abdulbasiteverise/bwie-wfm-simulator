@@ -38,19 +38,17 @@ let demand=calls+carryQueue
 
 let capacity=agents*(900/aht)
 
-let answered=Math.min(demand,capacity)
+let served=Math.min(demand,capacity)
 
-let queue=Math.max(0,demand-capacity)
+let queue=Math.max(0,demand-served)
 
 let wait=(queue/(agents+1))*aht
 
 let sla=wait<slaTarget ? 100*(1-wait/slaTarget) : 0
 
-let occupancy=Math.min(100,(answered/capacity)*100)
+let occupancy=Math.min(100,(served/capacity)*100)
 
-let abandon=queue*(aht/patience)/10
-
-// Detect operational risk
+let abandon=queue*(aht/patience)/20
 
 if(queue>20 || occupancy>95){
 attentionIntervals.push(i+1)
@@ -68,7 +66,7 @@ occ:occupancy.toFixed(1)
 carryQueue=queue
 
 totalCalls+=calls
-totalAnswered+=answered
+totalAnswered+=served
 totalQueue+=queue
 totalAbandon+=abandon
 occSum+=occupancy
@@ -100,7 +98,7 @@ let html=`
 <tr>
 <th>Interval</th>
 <th>Calls</th>
-<th>Agents</th>
+<th>Active Agents</th>
 <th>Queue</th>
 <th>SLA %</th>
 <th>Occupancy %</th>
@@ -171,7 +169,6 @@ worstText=attentionIntervals.join(", ")
 }
 
 let peakQueue=Math.max(...results.map(r=>Number(r.queue)))
-
 let peakInterval=results.find(r=>Number(r.queue)===peakQueue).interval
 
 let summary=`
@@ -187,7 +184,8 @@ let summary=`
 
 <p>
 The simulation indicates that demand begins exceeding available agent capacity
-during mid-day intervals, causing queues to propagate across later periods.
+during peak intervals. Once queues begin forming they propagate into later
+intervals creating sustained workload pressure.
 </p>
 
 <p>
@@ -200,9 +198,9 @@ Peak queue occurred at <b>interval ${peakInterval}</b> with approximately
 </p>
 
 <p>
-These intervals show elevated queue pressure or extremely high occupancy levels.
-Increasing staffing during these periods would significantly reduce queue buildup
-and stabilize service level performance.
+These intervals show elevated queue levels or extremely high occupancy.
+Increasing staffing during these periods would likely reduce queue buildup
+and stabilize service levels.
 </p>
 
 `
