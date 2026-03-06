@@ -4,17 +4,24 @@ let slaChart
 document.getElementById("runBtn").addEventListener("click", run)
 
 function parseCSV(text){
-return text.split(",").map(v=>parseFloat(v.trim()))
+return text.split(",").map(v=>parseFloat(v.trim())).filter(v=>!isNaN(v))
+}
+
+function factorial(n){
+if(n<=1) return 1
+let f=1
+for(let i=2;i<=n;i++) f*=i
+return f
 }
 
 function erlangC(traffic, agents){
 
+if(traffic >= agents) return 1
+
 let sum=0
 
 for(let k=0;k<agents;k++){
-
 sum+=Math.pow(traffic,k)/factorial(k)
-
 }
 
 const top=(Math.pow(traffic,agents)/factorial(agents))*(agents/(agents-traffic))
@@ -22,12 +29,6 @@ const top=(Math.pow(traffic,agents)/factorial(agents))*(agents/(agents-traffic))
 const pw=top/(sum+top)
 
 return pw
-
-}
-
-function factorial(n){
-if(n<=1) return 1
-return n*factorial(n-1)
 }
 
 function run(){
@@ -54,7 +55,9 @@ let totalAbn=0
 let totalQueue=0
 let occSum=0
 
-for(let i=0;i<volume.length;i++){
+const intervals=Math.min(volume.length, staffing.length)
+
+for(let i=0;i<intervals;i++){
 
 const calls=volume[i]
 
@@ -77,7 +80,7 @@ abandon=queue*(1/(patience/30))
 
 sla=100-(pw*50)
 
-occ=(traffic/agents)*100
+occ=Math.min(100,(traffic/agents)*100)
 
 }else{
 
@@ -95,7 +98,14 @@ occ=Math.min(100,(calls/serviceRate)*100)
 
 }
 
-results.push({calls,agents,queue,abandon,sla,occ})
+results.push({
+calls,
+agents,
+queue,
+abandon,
+sla,
+occ
+})
 
 totalCalls+=calls
 totalAnswered+=calls-queue
@@ -130,11 +140,17 @@ if(volumeChart) volumeChart.destroy()
 volumeChart=new Chart(document.getElementById("volumeChart"),{
 type:"line",
 data:{
-labels:volume.map((_,i)=>i+1),
-datasets:[{
-label:"Volume",
-data:volume
-}]
+labels:volume.map((_,i)=>"Interval "+(i+1)),
+datasets:[
+{
+label:"Call Volume",
+data:volume,
+borderWidth:2
+}
+]
+},
+options:{
+responsive:true
 }
 })
 
@@ -143,11 +159,17 @@ if(slaChart) slaChart.destroy()
 slaChart=new Chart(document.getElementById("slaChart"),{
 type:"line",
 data:{
-labels:slaData.map((_,i)=>i+1),
-datasets:[{
+labels:slaData.map((_,i)=>"Interval "+(i+1)),
+datasets:[
+{
 label:"SLA %",
-data:slaData
-}]
+data:slaData,
+borderWidth:2
+}
+]
+},
+options:{
+responsive:true
 }
 })
 
@@ -158,6 +180,22 @@ function renderTable(results){
 const table=document.getElementById("intervalTable")
 
 table.innerHTML=""
+
+const header=document.createElement("div")
+
+header.className="interval"
+header.style.fontWeight="bold"
+
+header.innerHTML=`
+<div>Interval</div>
+<div>Call Volume</div>
+<div>Active Agents</div>
+<div>Queue Length</div>
+<div>SLA %</div>
+<div>Occupancy %</div>
+`
+
+table.appendChild(header)
 
 results.forEach((r,i)=>{
 
