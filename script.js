@@ -3,44 +3,56 @@ document.getElementById("runBtn").addEventListener("click", runSimulation)
 let volumeChart
 let slaChart
 
-function parseCSV(text) {
-return text.split(",").map(v => Number(v.trim()))
+function parseCSV(text){
+return text.split(",").map(v=>Number(v.trim()))
 }
 
 function runSimulation(){
 
-const volume = parseCSV(document.getElementById("volumeInput").value)
-const staff = parseCSV(document.getElementById("staffInput").value)
+const volume=parseCSV(document.getElementById("volumeInput").value)
+const staff=parseCSV(document.getElementById("staffInput").value)
 
-const aht = Number(document.getElementById("ahtInput").value)
-const patience = Number(document.getElementById("patienceInput").value)
-const shrink = Number(document.getElementById("shrinkInput").value)/100
-const slaTarget = Number(document.getElementById("slaInput").value)
+const aht=Number(document.getElementById("ahtInput").value)
+const patience=Number(document.getElementById("patienceInput").value)
+const shrink=Number(document.getElementById("shrinkInput").value)/100
+const slaTarget=Number(document.getElementById("slaInput").value)
 
-let results = []
+let results=[]
 
-let totalQueue = 0
-let totalAnswered = 0
-let totalCalls = 0
-let totalAbandon = 0
-let occSum = 0
+let carryQueue=0
+
+let totalCalls=0
+let totalAnswered=0
+let totalQueue=0
+let totalAbandon=0
+let occSum=0
+
+let attentionIntervals=[]
 
 for(let i=0;i<volume.length;i++){
 
-let calls = volume[i]
-let agents = staff[i]*(1-shrink)
+let calls=volume[i]
+let agents=staff[i]*(1-shrink)
 
-let capacity = agents*(900/aht)
+let intervalDemand=calls+carryQueue
 
-let queue = Math.max(0,calls-capacity)
+let capacity=agents*(900/aht)
 
-let wait = queue/(agents+1)
+let answered=Math.min(intervalDemand,capacity)
 
-let sla = wait<slaTarget ? 100*(1-wait/slaTarget) : 0
+let queue=Math.max(0,intervalDemand-capacity)
 
-let occupancy = Math.min(100,(calls/capacity)*100)
+let wait=(queue/(agents+1))*aht
 
-let abandon = queue*(aht/patience)/10
+let sla=wait<slaTarget ? 100*(1-wait/slaTarget) : 0
+
+let occupancy=Math.min(100,(answered/capacity)*100)
+
+let abandon=queue*(aht/patience)/10
+
+if(queue>20 || occupancy>95){
+attentionIntervals.push(i+1)
+}
 
 results.push({
 interval:i+1,
@@ -51,9 +63,11 @@ sla:sla.toFixed(1),
 occ:occupancy.toFixed(1)
 })
 
-totalQueue+=queue
-totalAnswered+=Math.min(calls,capacity)
+carryQueue=queue
+
 totalCalls+=calls
+totalAnswered+=answered
+totalQueue+=queue
 totalAbandon+=abandon
 occSum+=occupancy
 
@@ -69,19 +83,27 @@ document.getElementById("occMetric").innerText=occ+"%"
 document.getElementById("queueMetric").innerText=avgQueue
 document.getElementById("abnMetric").innerText=abn+"%"
 
-
 renderTable(results)
 
 renderCharts(volume,results)
 
-generateSummary(results,sla,occ,avgQueue,abn)
+generateSummary(results,sla,occ,avgQueue,abn,attentionIntervals)
 
 }
 
-
 function renderTable(results){
 
-let html="<table><tr><th>Interval</th><th>Call Volume</th><th>Active Agents</th><th>Queue</th><th>SLA %</th><th>Occupancy %</th></tr>"
+let html=`
+<table>
+<tr>
+<th>Interval</th>
+<th>Calls</th>
+<th>Agents</th>
+<th>Queue</th>
+<th>SLA %</th>
+<th>Occupancy %</th>
+</tr>
+`
 
 results.forEach(r=>{
 html+=`
@@ -102,7 +124,6 @@ document.getElementById("intervalTable").innerHTML=html
 
 }
 
-
 function renderCharts(volume,results){
 
 const slaData=results.map(r=>Number(r.sla))
@@ -115,11 +136,15 @@ data:{
 labels:volume.map((_,i)=>i+1),
 datasets:[{
 label:"Call Volume",
-data:volume
+data:volume,
+borderColor:"#38bdf8",
+tension:0.3
 }]
+},
+options:{
+responsive:true
 }
 })
-
 
 if(slaChart) slaChart.destroy()
 
@@ -129,23 +154,26 @@ data:{
 labels:volume.map((_,i)=>i+1),
 datasets:[{
 label:"SLA %",
-data:slaData
+data:slaData,
+borderColor:"#34d399",
+tension:0.3
 }]
+},
+options:{
+responsive:true
 }
 })
 
 }
 
+function generateSummary(results,sla,occ,avgQueue,abn,attentionIntervals){
 
-function generateSummary(results,sla,occ,avgQueue,abn){
+let worstText=attentionIntervals.length ? attentionIntervals.join(", ") : "None"
 
-let worst = results
-.filter(r=>Number(r.sla)<50)
-.map(r=>r.interval)
+let peakQueue=Math.max(...results.map(r=>Number(r.queue)))
+let peakInterval=results.find(r=>Number(r.queue)===peakQueue).interval
 
-let worstText = worst.length ? worst.join(", ") : "None"
-
-let summary = `
+let summary=`
 
 <p><b>Overall Performance</b></p>
 
@@ -157,20 +185,21 @@ let summary = `
 </ul>
 
 <p>
-The simulation suggests that demand begins exceeding staffing capacity during
-the mid-day intervals, leading to sustained queue buildup and declining SLA.
-Agent occupancy reaches extremely high levels which indicates the operation
-is running near saturation.
+The simulation indicates that demand begins exceeding available agent capacity during peak intervals.
+Once queues begin forming they propagate into later intervals, causing sustained workload pressure.
 </p>
 
 <p>
-Intervals requiring operational attention: <b>${worstText}</b>.
-These periods experience the highest queues and the lowest service levels.
+Peak queue occurred at <b>interval ${peakInterval}</b> with approximately <b>${peakQueue}</b> calls waiting.
 </p>
 
 <p>
-Increasing staffing during these peak intervals would likely reduce queue buildup,
-improve service level performance and stabilize occupancy within recommended ranges.
+<b>Intervals requiring operational attention:</b> ${worstText}
+</p>
+
+<p>
+These intervals show elevated queue levels or agent occupancy above safe operational thresholds.
+Increasing staffing during these periods would reduce queue accumulation and stabilize service levels.
 </p>
 
 `
