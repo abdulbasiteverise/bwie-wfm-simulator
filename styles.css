@@ -740,3 +740,35 @@ body {
         grid-template-columns: 1fr;
     }
 }
+/* ========================= */
+/* BWIE Operational Insights */
+/* ========================= */
+
+#aiInsightCard{
+    border:1px solid rgba(34,211,238,0.3);
+    background:linear-gradient(135deg, rgba(15,23,42,0.9), rgba(2,6,23,0.9));
+}
+
+#aiInsights{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+#aiInsights .stat-row{
+    background:rgba(30,41,59,0.35);
+    border:1px solid rgba(71,85,105,0.4);
+    padding:10px;
+    border-radius:8px;
+    font-size:12px;
+    line-height:1.4;
+}
+
+#aiInsights .stat-label{
+    font-weight:600;
+    color:#22d3ee;
+}
+
+#aiInsights .stat-value{
+    color:#cbd5e1;
+}
