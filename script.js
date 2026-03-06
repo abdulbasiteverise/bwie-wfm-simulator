@@ -18,7 +18,6 @@ const shrink=Number(document.getElementById("shrinkInput").value)/100
 const slaTarget=Number(document.getElementById("slaInput").value)
 
 let results=[]
-
 let carryQueue=0
 
 let totalCalls=0
@@ -32,15 +31,16 @@ let attentionIntervals=[]
 for(let i=0;i<volume.length;i++){
 
 let calls=volume[i]
+
 let agents=staff[i]*(1-shrink)
 
-let intervalDemand=calls+carryQueue
+let demand=calls+carryQueue
 
 let capacity=agents*(900/aht)
 
-let answered=Math.min(intervalDemand,capacity)
+let answered=Math.min(demand,capacity)
 
-let queue=Math.max(0,intervalDemand-capacity)
+let queue=Math.max(0,demand-capacity)
 
 let wait=(queue/(agents+1))*aht
 
@@ -49,6 +49,8 @@ let sla=wait<slaTarget ? 100*(1-wait/slaTarget) : 0
 let occupancy=Math.min(100,(answered/capacity)*100)
 
 let abandon=queue*(aht/patience)/10
+
+// Detect operational risk
 
 if(queue>20 || occupancy>95){
 attentionIntervals.push(i+1)
@@ -140,9 +142,6 @@ data:volume,
 borderColor:"#38bdf8",
 tension:0.3
 }]
-},
-options:{
-responsive:true
 }
 })
 
@@ -158,9 +157,6 @@ data:slaData,
 borderColor:"#34d399",
 tension:0.3
 }]
-},
-options:{
-responsive:true
 }
 })
 
@@ -168,9 +164,14 @@ responsive:true
 
 function generateSummary(results,sla,occ,avgQueue,abn,attentionIntervals){
 
-let worstText=attentionIntervals.length ? attentionIntervals.join(", ") : "None"
+let worstText="None"
+
+if(attentionIntervals.length>0){
+worstText=attentionIntervals.join(", ")
+}
 
 let peakQueue=Math.max(...results.map(r=>Number(r.queue)))
+
 let peakInterval=results.find(r=>Number(r.queue)===peakQueue).interval
 
 let summary=`
@@ -185,12 +186,13 @@ let summary=`
 </ul>
 
 <p>
-The simulation indicates that demand begins exceeding available agent capacity during peak intervals.
-Once queues begin forming they propagate into later intervals, causing sustained workload pressure.
+The simulation indicates that demand begins exceeding available agent capacity
+during mid-day intervals, causing queues to propagate across later periods.
 </p>
 
 <p>
-Peak queue occurred at <b>interval ${peakInterval}</b> with approximately <b>${peakQueue}</b> calls waiting.
+Peak queue occurred at <b>interval ${peakInterval}</b> with approximately
+<b>${peakQueue}</b> calls waiting.
 </p>
 
 <p>
@@ -198,8 +200,9 @@ Peak queue occurred at <b>interval ${peakInterval}</b> with approximately <b>${p
 </p>
 
 <p>
-These intervals show elevated queue levels or agent occupancy above safe operational thresholds.
-Increasing staffing during these periods would reduce queue accumulation and stabilize service levels.
+These intervals show elevated queue pressure or extremely high occupancy levels.
+Increasing staffing during these periods would significantly reduce queue buildup
+and stabilize service level performance.
 </p>
 
 `
