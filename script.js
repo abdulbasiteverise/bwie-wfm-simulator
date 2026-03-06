@@ -1067,6 +1067,78 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Initial render
+    /* =============================== */
+/* BWIE Operational Insight Engine */
+/* =============================== */
+
+function generateBWIEInsights(results){
+
+    const container=document.getElementById("aiInsights");
+    if(!container || !results) return;
+
+    container.innerHTML="";
+
+    let lowSLA=0;
+    let highOcc=0;
+    let longQueue=0;
+
+    const total=results.length;
+
+    results.forEach(r=>{
+
+        if(r.sla<70) lowSLA++;
+
+        if(r.occupancy>90) highOcc++;
+
+        if(r.queue>10) longQueue++;
+
+    });
+
+    const insights=[];
+
+    if(lowSLA>total*0.25){
+        insights.push({
+            label:"Service Risk",
+            text:"Multiple intervals below SLA. Consider reforecasting or temporary staffing."
+        });
+    }
+
+    if(highOcc>total*0.30){
+        insights.push({
+            label:"Agent Utilization",
+            text:"Occupancy above 90% detected. Risk of burnout and service instability."
+        });
+    }
+
+    if(longQueue>total*0.20){
+        insights.push({
+            label:"Queue Pressure",
+            text:"Queue length spikes detected. Demand likely exceeding capacity."
+        });
+    }
+
+    if(insights.length===0){
+        insights.push({
+            label:"System Status",
+            text:"Operation stable. Staffing aligned with forecast demand."
+        });
+    }
+
+    insights.forEach(i=>{
+
+        const row=document.createElement("div");
+        row.className="stat-row";
+
+        row.innerHTML=`
+            <div class="stat-label">${i.label}</div>
+            <div class="stat-value">${i.text}</div>
+        `;
+
+        container.appendChild(row);
+
+    });
+
+}
     renderSkills();
     parseInputs();
     calculateResults();
