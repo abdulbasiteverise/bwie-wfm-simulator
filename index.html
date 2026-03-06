@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BWIE Workforce Simulation Lab</title>
+
+<title>BWIE Workforce Intelligence Engine</title>
 
 <link rel="stylesheet" href="styles.css">
 
@@ -16,63 +17,62 @@
 <div class="container">
 
 <header>
+
 <h1>BWIE</h1>
+
 <p>Basit Workforce Intelligence Engine</p>
+
 </header>
 
 
-<section class="model-select">
-
-<h2>Model</h2>
-
-<select id="modelSelect">
-<option value="simulation">Queue Simulation</option>
-<option value="erlang">Erlang C Staffing</option>
-</select>
-
-</section>
-
-
-<section class="inputs">
+<section>
 
 <h2>Inputs</h2>
 
 <label>Call Volume (CSV)</label>
-<textarea id="volumeInput">
-50,75,100,120,140,150,160,155,150,145,140,135
-</textarea>
+
+<textarea id="volumeInput">50,75,100,120,140,150,160,155,150,145,140,135</textarea>
 
 <label>Agent Staffing (CSV)</label>
-<textarea id="staffInput">
-20,20,25,25,30,30,30,30,28,28,26,26
-</textarea>
+
+<textarea id="staffInput">20,20,25,25,30,30,30,30,28,28,26,26</textarea>
 
 <label>Average Handle Time (seconds)</label>
+
 <input id="ahtInput" type="number" value="240">
 
 <label>Customer Patience (seconds)</label>
+
 <input id="patienceInput" type="number" value="120">
 
 <label>Shrinkage %</label>
+
 <input id="shrinkInput" type="number" value="15">
 
 <label>SLA Threshold (seconds)</label>
+
 <input id="slaInput" type="number" value="20">
 
 <button id="runBtn">Run Simulation</button>
 
+<button id="optimizeBtn">Optimize Staffing</button>
+
+<button id="reforecastBtn">Intraday Reforecast</button>
+
+<button id="monteBtn">Monte Carlo Risk</button>
+
 </section>
 
 
-<section class="metrics">
+<section>
 
-<h2>Operational Metrics</h2>
+<h2>KPI Dashboard</h2>
 
 <div class="grid">
 
 <div class="metric">
 <h3 id="slaMetric">--</h3>
-<p>SLA %</p>
+<p>SLA</p>
 </div>
 
 <div class="metric">
@@ -95,7 +95,16 @@
 </section>
 
 
-<section class="charts">
+<section>
+
+<h2>Operational Insights</h2>
+
+<div id="insightBox"></div>
+
+</section>
+
+
+<section>
 
 <h2>Charts</h2>
 
@@ -116,7 +125,9 @@
 
 
 <footer>
-<p>BWIE Simulation Lab — Abdul Basit</p>
+
+BWIE Simulation Lab — Abdul Basit
+
 </footer>
 
 </div>
@@ -124,4 +135,5 @@
 <script src="script.js"></script>
 
 </body>
+
 </html>
