@@ -9,96 +9,97 @@ return text.split(",").map(v => Number(v.trim()))
 
 function runSimulation(){
 
-const volume = parseCSV(document.getElementById("volumeInput").value)
-const staff = parseCSV(document.getElementById("staffInput").value)
+const volume=parseCSV(document.getElementById("volumeInput").value)
+const staff=parseCSV(document.getElementById("staffInput").value)
 
-const aht = Number(document.getElementById("ahtInput").value)
-const patience = Number(document.getElementById("patienceInput").value)
-const shrink = Number(document.getElementById("shrinkInput").value) / 100
-const slaTarget = Number(document.getElementById("slaInput").value)
+const aht=Number(document.getElementById("ahtInput").value)
+const patience=Number(document.getElementById("patienceInput").value)
+const shrink=Number(document.getElementById("shrinkInput").value)/100
+const slaTarget=Number(document.getElementById("slaInput").value)
 
-let results = []
+let results=[]
+let carryQueue=0
 
-let carryQueue = 0
+let totalCalls=0
+let totalAnswered=0
+let totalQueue=0
+let totalAbandon=0
+let occSum=0
 
-let totalCalls = 0
-let totalAnswered = 0
-let totalQueue = 0
-let totalAbandon = 0
-let occSum = 0
-
-let attentionIntervals = []
+let attentionIntervals=[]
 
 for(let i=0;i<volume.length;i++){
 
-let calls = volume[i]
+let calls=volume[i]
 
-let agents = staff[i] * (1 - shrink)
+let agents=staff[i]*(1-shrink)
 
-let demand = calls + carryQueue
+let demand=calls+carryQueue
 
-let capacity = agents * (900 / aht)
+let serviceRate=agents*(900/aht)
 
-let served = Math.min(demand, capacity)
+let served=Math.min(demand,serviceRate)
 
-let queue = Math.max(0, demand - served)
+let queue=Math.max(0,demand-served)
 
-let wait = queue > 0 ? (queue / agents) * aht : 0
+/* Correct wait estimate */
 
-// Smooth SLA decay model
-let sla = Math.exp(-wait / slaTarget) * 100
+let wait=queue>0 ? (queue/serviceRate)*aht : 0
 
-let occupancy = Math.min(100, (served / capacity) * 100)
+/* Smooth SLA decay */
 
-// Abandon estimate
-let abandon = queue * (aht / patience) / 20
+let sla=Math.exp(-wait/slaTarget)*100
 
-// Detect risky intervals
-if(queue > 20 || occupancy > 95){
+let occupancy=Math.min(100,(served/serviceRate)*100)
+
+/* abandonment estimate */
+
+let abandon=queue*(aht/patience)/25
+
+if(queue>20 || occupancy>95){
 attentionIntervals.push(i+1)
 }
 
 results.push({
-interval: i+1,
-calls: calls,
-agents: agents.toFixed(1),
-queue: queue.toFixed(1),
-sla: sla.toFixed(1),
-occ: occupancy.toFixed(1)
+interval:i+1,
+calls:calls,
+agents:agents.toFixed(1),
+queue:queue.toFixed(1),
+sla:sla.toFixed(1),
+occ:occupancy.toFixed(1)
 })
 
-carryQueue = queue
+carryQueue=queue
 
-totalCalls += calls
-totalAnswered += served
-totalQueue += queue
-totalAbandon += abandon
-occSum += occupancy
+totalCalls+=calls
+totalAnswered+=served
+totalQueue+=queue
+totalAbandon+=abandon
+occSum+=occupancy
 
 }
 
-const avgQueue = (totalQueue / volume.length).toFixed(1)
-const occ = (occSum / volume.length).toFixed(1)
-const sla = ((totalAnswered / totalCalls) * 100).toFixed(1)
-const abn = ((totalAbandon / totalCalls) * 100).toFixed(1)
+const avgQueue=(totalQueue/volume.length).toFixed(1)
+const occ=(occSum/volume.length).toFixed(1)
+const sla=((totalAnswered/totalCalls)*100).toFixed(1)
+const abn=((totalAbandon/totalCalls)*100).toFixed(1)
 
-document.getElementById("slaMetric").innerText = sla + "%"
-document.getElementById("occMetric").innerText = occ + "%"
-document.getElementById("queueMetric").innerText = avgQueue
-document.getElementById("abnMetric").innerText = abn + "%"
+document.getElementById("slaMetric").innerText=sla+"%"
+document.getElementById("occMetric").innerText=occ+"%"
+document.getElementById("queueMetric").innerText=avgQueue
+document.getElementById("abnMetric").innerText=abn+"%"
 
 renderTable(results)
 
-renderCharts(volume, results)
+renderCharts(volume,results)
 
-generateSummary(results, sla, occ, avgQueue, abn, attentionIntervals)
+generateSummary(results,sla,occ,avgQueue,abn,attentionIntervals)
 
 }
 
-
 function renderTable(results){
 
-let html = `
+let html=`
 <table>
 <tr>
 <th>Interval</th>
@@ -111,7 +112,7 @@ let html = `
 `
 
 results.forEach(r=>{
-html += `
+html+=`
 <tr>
 <td>${r.interval}</td>
 <td>${r.calls}</td>
@@ -123,66 +124,61 @@ html += `
 `
 })
 
-html += "</table>"
+html+="</table>"
 
-document.getElementById("intervalTable").innerHTML = html
+document.getElementById("intervalTable").innerHTML=html
 
 }
 
+function renderCharts(volume,results){
 
-function renderCharts(volume, results){
-
-const slaData = results.map(r => Number(r.sla))
+const slaData=results.map(r=>Number(r.sla))
 
 if(volumeChart) volumeChart.destroy()
 
-volumeChart = new Chart(document.getElementById("volumeChart"),{
+volumeChart=new Chart(document.getElementById("volumeChart"),{
 type:"line",
 data:{
-labels: volume.map((_,i)=>i+1),
+labels:volume.map((_,i)=>i+1),
 datasets:[{
 label:"Call Volume",
-data: volume,
+data:volume,
 borderColor:"#38bdf8",
 tension:0.3
 }]
-},
-options:{responsive:true}
+}
 })
-
 
 if(slaChart) slaChart.destroy()
 
-slaChart = new Chart(document.getElementById("slaChart"),{
+slaChart=new Chart(document.getElementById("slaChart"),{
 type:"line",
 data:{
-labels: volume.map((_,i)=>i+1),
+labels:volume.map((_,i)=>i+1),
 datasets:[{
 label:"SLA %",
-data: slaData,
+data:slaData,
 borderColor:"#34d399",
 tension:0.3
 }]
-},
-options:{responsive:true}
+}
 })
 
 }
 
+function generateSummary(results,sla,occ,avgQueue,abn,attentionIntervals){
 
-function generateSummary(results, sla, occ, avgQueue, abn, attentionIntervals){
+let worstText="None"
 
-let worstText = "None"
-
-if(attentionIntervals.length > 0){
-worstText = attentionIntervals.join(", ")
+if(attentionIntervals.length>0){
+worstText=attentionIntervals.join(", ")
 }
 
-let peakQueue = Math.max(...results.map(r=>Number(r.queue)))
+let peakQueue=Math.max(...results.map(r=>Number(r.queue)))
 
-let peakInterval = results.find(r=>Number(r.queue) === peakQueue).interval
+let peakInterval=results.find(r=>Number(r.queue)===peakQueue).interval
 
-let summary = `
+let summary=`
 
 <p><b>Overall Performance</b></p>
 
@@ -194,14 +190,13 @@ let summary = `
 </ul>
 
 <p>
-The simulation indicates that demand begins exceeding available agent capacity
-during peak intervals. Once queues begin forming they propagate into later
-periods creating sustained workload pressure.
+Demand begins exceeding staffing capacity during peak intervals,
+causing queues to propagate into later periods.
 </p>
 
 <p>
-Peak queue occurred at <b>interval ${peakInterval}</b> with approximately
-<b>${peakQueue}</b> calls waiting.
+Peak queue occurred at <b>interval ${peakInterval}</b>
+with approximately <b>${peakQueue}</b> calls waiting.
 </p>
 
 <p>
@@ -209,13 +204,13 @@ Peak queue occurred at <b>interval ${peakInterval}</b> with approximately
 </p>
 
 <p>
-These intervals show elevated queue levels or extremely high occupancy.
+These intervals show elevated queue pressure or high occupancy.
 Increasing staffing during these periods would reduce queue buildup
-and improve service level performance.
+and improve service level stability.
 </p>
 
 `
 
-document.getElementById("summaryText").innerHTML = summary
+document.getElementById("summaryText").innerHTML=summary
 
 }
