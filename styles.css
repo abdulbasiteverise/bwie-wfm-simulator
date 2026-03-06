@@ -18,6 +18,7 @@ margin-bottom:30px;
 
 h1{
 color:#38bdf8;
+margin-bottom:5px;
 }
 
 section{
@@ -27,7 +28,7 @@ margin-bottom:20px;
 border-radius:10px;
 }
 
-textarea,input{
+textarea,input,select{
 width:100%;
 padding:8px;
 margin-bottom:10px;
@@ -37,12 +38,11 @@ color:white;
 }
 
 button{
-padding:10px 15px;
+padding:10px 20px;
 background:#0284c7;
 border:none;
-color:white;
 border-radius:6px;
-margin-right:5px;
+color:white;
 cursor:pointer;
 }
 
@@ -59,8 +59,8 @@ gap:10px;
 .metric{
 background:#020617;
 padding:15px;
-border-radius:8px;
 text-align:center;
+border-radius:8px;
 }
 
 .metric h3{
@@ -71,38 +71,20 @@ margin:0;
 canvas{
 background:#020617;
 padding:10px;
-border-radius:8px;
 margin-top:20px;
+border-radius:8px;
 }
 
 .interval{
 display:grid;
-grid-template-columns:repeat(7,1fr);
+grid-template-columns:repeat(6,1fr);
 padding:8px;
-font-size:12px;
 border-bottom:1px solid #334155;
-}
-
-.interval.good{
-background:#064e3b;
-}
-
-.interval.medium{
-background:#78350f;
-}
-
-.interval.bad{
-background:#7f1d1d;
-}
-
-#insightBox{
-background:#020617;
-padding:15px;
-border-radius:8px;
+font-size:12px;
 }
 
 footer{
 text-align:center;
 opacity:.6;
-margin-top:30px;
+margin-top:40px;
 }
