@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-
 <meta charset="UTF-8">
-
-<title>BWIE Workforce Intelligence Engine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BWIE Workforce Simulation Lab</title>
 
 <link rel="stylesheet" href="styles.css">
 
@@ -17,62 +16,63 @@
 <div class="container">
 
 <header>
-
 <h1>BWIE</h1>
-
 <p>Basit Workforce Intelligence Engine</p>
-
 </header>
 
 
-<section>
+<section class="model-select">
 
-<h2>Inputs</h2>
+<h2>Model</h2>
 
-<label>Call Volume (CSV)</label>
-
-<textarea id="volumeInput">50,75,100,120,140,150,160,155,150,145,140,135</textarea>
-
-<label>Agent Staffing (CSV)</label>
-
-<textarea id="staffInput">20,20,25,25,30,30,30,30,28,28,26,26</textarea>
-
-<label>Average Handle Time (seconds)</label>
-
-<input id="ahtInput" type="number" value="240">
-
-<label>Customer Patience (seconds)</label>
-
-<input id="patienceInput" type="number" value="120">
-
-<label>Shrinkage %</label>
-
-<input id="shrinkInput" type="number" value="15">
-
-<label>SLA Threshold (seconds)</label>
-
-<input id="slaInput" type="number" value="20">
-
-<button id="runBtn">Run Simulation</button>
-
-<button id="optimizeBtn">Optimize Staffing</button>
-
-<button id="reforecastBtn">Intraday Reforecast</button>
-
-<button id="monteBtn">Monte Carlo Risk</button>
+<select id="modelSelect">
+<option value="simulation">Queue Simulation</option>
+<option value="erlang">Erlang C Staffing</option>
+</select>
 
 </section>
 
 
-<section>
+<section class="inputs">
 
-<h2>KPI Dashboard</h2>
+<h2>Inputs</h2>
+
+<label>Call Volume (CSV)</label>
+<textarea id="volumeInput">
+50,75,100,120,140,150,160,155,150,145,140,135
+</textarea>
+
+<label>Agent Staffing (CSV)</label>
+<textarea id="staffInput">
+20,20,25,25,30,30,30,30,28,28,26,26
+</textarea>
+
+<label>Average Handle Time (seconds)</label>
+<input id="ahtInput" type="number" value="240">
+
+<label>Customer Patience (seconds)</label>
+<input id="patienceInput" type="number" value="120">
+
+<label>Shrinkage %</label>
+<input id="shrinkInput" type="number" value="15">
+
+<label>SLA Threshold (seconds)</label>
+<input id="slaInput" type="number" value="20">
+
+<button id="runBtn">Run Simulation</button>
+
+</section>
+
+
+<section class="metrics">
+
+<h2>Operational Metrics</h2>
 
 <div class="grid">
 
 <div class="metric">
 <h3 id="slaMetric">--</h3>
-<p>SLA</p>
+<p>SLA %</p>
 </div>
 
 <div class="metric">
@@ -95,16 +95,7 @@
 </section>
 
 
-<section>
-
-<h2>Operational Insights</h2>
-
-<div id="insightBox"></div>
-
-</section>
-
-
-<section>
+<section class="charts">
 
 <h2>Charts</h2>
 
@@ -125,9 +116,7 @@
 
 
 <footer>
-
-BWIE Simulation Lab — Abdul Basit
-
+<p>BWIE Simulation Lab — Abdul Basit</p>
 </footer>
 
 </div>
@@ -135,5 +124,4 @@ BWIE Simulation Lab — Abdul Basit
 <script src="script.js"></script>
 
 </body>
-
 </html>
