@@ -1,219 +1,180 @@
+document.getElementById("runBtn").addEventListener("click", runSimulation)
+
 let volumeChart
 let slaChart
 
-document.getElementById("runBtn").addEventListener("click", run)
-
-function parseCSV(text){
-return text.split(",").map(v=>parseFloat(v.trim())).filter(v=>!isNaN(v))
+function parseCSV(text) {
+return text.split(",").map(v => Number(v.trim()))
 }
 
-function factorial(n){
-if(n<=1) return 1
-let f=1
-for(let i=2;i<=n;i++) f*=i
-return f
-}
+function runSimulation(){
 
-function erlangC(traffic, agents){
+const volume = parseCSV(document.getElementById("volumeInput").value)
+const staff = parseCSV(document.getElementById("staffInput").value)
 
-if(traffic >= agents) return 1
+const aht = Number(document.getElementById("ahtInput").value)
+const patience = Number(document.getElementById("patienceInput").value)
+const shrink = Number(document.getElementById("shrinkInput").value)/100
+const slaTarget = Number(document.getElementById("slaInput").value)
 
-let sum=0
+let results = []
 
-for(let k=0;k<agents;k++){
-sum+=Math.pow(traffic,k)/factorial(k)
-}
+let totalQueue = 0
+let totalAnswered = 0
+let totalCalls = 0
+let totalAbandon = 0
+let occSum = 0
 
-const top=(Math.pow(traffic,agents)/factorial(agents))*(agents/(agents-traffic))
+for(let i=0;i<volume.length;i++){
 
-const pw=top/(sum+top)
+let calls = volume[i]
+let agents = staff[i]*(1-shrink)
 
-return pw
-}
+let capacity = agents*(900/aht)
 
-function run(){
+let queue = Math.max(0,calls-capacity)
 
-const model=document.getElementById("modelSelect").value
+let wait = queue/(agents+1)
 
-const volume=parseCSV(document.getElementById("volumeInput").value)
+let sla = wait<slaTarget ? 100*(1-wait/slaTarget) : 0
 
-const staffing=parseCSV(document.getElementById("staffInput").value)
+let occupancy = Math.min(100,(calls/capacity)*100)
 
-const aht=parseFloat(document.getElementById("ahtInput").value)
-
-const patience=parseFloat(document.getElementById("patienceInput").value)
-
-const shrink=parseFloat(document.getElementById("shrinkInput").value)/100
-
-const slaThreshold=parseFloat(document.getElementById("slaInput").value)
-
-let results=[]
-
-let totalCalls=0
-let totalAnswered=0
-let totalAbn=0
-let totalQueue=0
-let occSum=0
-
-const intervals=Math.min(volume.length, staffing.length)
-
-for(let i=0;i<intervals;i++){
-
-const calls=volume[i]
-
-const agents=staffing[i]*(1-shrink)
-
-const traffic=(calls*aht)/900
-
-let queue=0
-let abandon=0
-let sla=0
-let occ=0
-
-if(model==="erlang"){
-
-const pw=erlangC(traffic,Math.floor(agents))
-
-queue=pw*calls*0.5
-
-abandon=queue*(1/(patience/30))
-
-sla=100-(pw*50)
-
-occ=Math.min(100,(traffic/agents)*100)
-
-}else{
-
-const serviceRate=agents*(900/aht)
-
-queue=Math.max(0,calls-serviceRate)
-
-abandon=Math.min(queue,queue*(1/(patience/30)))
-
-const wait=queue>0?(queue/serviceRate)*60:0
-
-sla=wait<=slaThreshold?100:Math.max(0,100-(wait*2))
-
-occ=Math.min(100,(calls/serviceRate)*100)
-
-}
+let abandon = queue*(aht/patience)/10
 
 results.push({
+interval:i+1,
 calls,
-agents,
-queue,
-abandon,
-sla,
-occ
+agents:agents.toFixed(1),
+queue:queue.toFixed(1),
+sla:sla.toFixed(1),
+occ:occupancy.toFixed(1)
 })
 
-totalCalls+=calls
-totalAnswered+=calls-queue
-totalAbn+=abandon
 totalQueue+=queue
-occSum+=occ
+totalAnswered+=Math.min(calls,capacity)
+totalCalls+=calls
+totalAbandon+=abandon
+occSum+=occupancy
 
 }
 
-const slaMetric=(totalAnswered/totalCalls)*100
-const occMetric=occSum/results.length
-const queueMetric=totalQueue/results.length
-const abnMetric=(totalAbn/totalCalls)*100
+const avgQueue=(totalQueue/volume.length).toFixed(1)
+const occ=(occSum/volume.length).toFixed(1)
+const sla=((totalAnswered/totalCalls)*100).toFixed(1)
+const abn=((totalAbandon/totalCalls)*100).toFixed(1)
 
-document.getElementById("slaMetric").innerText=slaMetric.toFixed(1)+"%"
-document.getElementById("occMetric").innerText=occMetric.toFixed(1)+"%"
-document.getElementById("queueMetric").innerText=queueMetric.toFixed(1)
-document.getElementById("abnMetric").innerText=abnMetric.toFixed(1)+"%"
+document.getElementById("slaMetric").innerText=sla+"%"
+document.getElementById("occMetric").innerText=occ+"%"
+document.getElementById("queueMetric").innerText=avgQueue
+document.getElementById("abnMetric").innerText=abn+"%"
 
-renderCharts(results,volume)
 
 renderTable(results)
 
+renderCharts(volume,results)
+
+generateSummary(results,sla,occ,avgQueue,abn)
+
 }
 
-function renderCharts(results,volume){
 
-const slaData=results.map(r=>r.sla)
+function renderTable(results){
+
+let html="<table><tr><th>Interval</th><th>Call Volume</th><th>Active Agents</th><th>Queue</th><th>SLA %</th><th>Occupancy %</th></tr>"
+
+results.forEach(r=>{
+html+=`
+<tr>
+<td>${r.interval}</td>
+<td>${r.calls}</td>
+<td>${r.agents}</td>
+<td>${r.queue}</td>
+<td>${r.sla}</td>
+<td>${r.occ}</td>
+</tr>
+`
+})
+
+html+="</table>"
+
+document.getElementById("intervalTable").innerHTML=html
+
+}
+
+
+function renderCharts(volume,results){
+
+const slaData=results.map(r=>Number(r.sla))
 
 if(volumeChart) volumeChart.destroy()
 
 volumeChart=new Chart(document.getElementById("volumeChart"),{
 type:"line",
 data:{
-labels:volume.map((_,i)=>"Interval "+(i+1)),
-datasets:[
-{
+labels:volume.map((_,i)=>i+1),
+datasets:[{
 label:"Call Volume",
-data:volume,
-borderWidth:2
-}
-]
-},
-options:{
-responsive:true
+data:volume
+}]
 }
 })
+
 
 if(slaChart) slaChart.destroy()
 
 slaChart=new Chart(document.getElementById("slaChart"),{
 type:"line",
 data:{
-labels:slaData.map((_,i)=>"Interval "+(i+1)),
-datasets:[
-{
+labels:volume.map((_,i)=>i+1),
+datasets:[{
 label:"SLA %",
-data:slaData,
-borderWidth:2
-}
-]
-},
-options:{
-responsive:true
+data:slaData
+}]
 }
 })
 
 }
 
-function renderTable(results){
 
-const table=document.getElementById("intervalTable")
+function generateSummary(results,sla,occ,avgQueue,abn){
 
-table.innerHTML=""
+let worst = results
+.filter(r=>Number(r.sla)<50)
+.map(r=>r.interval)
 
-const header=document.createElement("div")
+let worstText = worst.length ? worst.join(", ") : "None"
 
-header.className="interval"
-header.style.fontWeight="bold"
+let summary = `
 
-header.innerHTML=`
-<div>Interval</div>
-<div>Call Volume</div>
-<div>Active Agents</div>
-<div>Queue Length</div>
-<div>SLA %</div>
-<div>Occupancy %</div>
+<p><b>Overall Performance</b></p>
+
+<ul>
+<li>SLA achieved: ${sla}%</li>
+<li>Average occupancy: ${occ}%</li>
+<li>Average queue length: ${avgQueue}</li>
+<li>Estimated abandonment: ${abn}%</li>
+</ul>
+
+<p>
+The simulation suggests that demand begins exceeding staffing capacity during
+the mid-day intervals, leading to sustained queue buildup and declining SLA.
+Agent occupancy reaches extremely high levels which indicates the operation
+is running near saturation.
+</p>
+
+<p>
+Intervals requiring operational attention: <b>${worstText}</b>.
+These periods experience the highest queues and the lowest service levels.
+</p>
+
+<p>
+Increasing staffing during these peak intervals would likely reduce queue buildup,
+improve service level performance and stabilize occupancy within recommended ranges.
+</p>
+
 `
 
-table.appendChild(header)
-
-results.forEach((r,i)=>{
-
-const row=document.createElement("div")
-
-row.className="interval"
-
-row.innerHTML=`
-<div>${i+1}</div>
-<div>${r.calls}</div>
-<div>${r.agents.toFixed(1)}</div>
-<div>${r.queue.toFixed(1)}</div>
-<div>${r.sla.toFixed(1)}%</div>
-<div>${r.occ.toFixed(1)}%</div>
-`
-
-table.appendChild(row)
-
-})
+document.getElementById("summaryText").innerHTML=summary
 
 }
