@@ -16,9 +16,38 @@ text-align:center;
 margin-bottom:40px;
 }
 
+section{
+margin-top:28px;
+}
+
 h1{
 color:#38bdf8;
 margin:0;
+font-size:clamp(1.9rem,4.6vw,2.7rem);
+line-height:1.2;
+}
+
+h2{
+margin-top:0;
+margin-bottom:12px;
+font-size:1.3rem;
+}
+
+p,li{
+line-height:1.65;
+}
+
+.hero{
+margin-bottom:26px;
+}
+
+.hero p{
+margin:10px 0 0;
+}
+
+.hero-authority{
+color:#cbd5e1;
+font-size:0.98rem;
 }
 
 textarea,input,select{
@@ -163,4 +192,38 @@ color:#64748b;
 .nav-link--active {
   border: 1px solid #2ea8ff;
   color: #ffffff;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .suite-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 18px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  textarea,
+  input,
+  select,
+  button {
+    font-size: 16px;
+  }
 }
