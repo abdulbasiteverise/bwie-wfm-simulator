@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BWIE Workforce Simulation Lab</title>
+<title>Backlog Management Tool | Workforce Planning & Workload Simulator by Abdul Basit</title>
+<meta name="description" content="Backlog management tool for workforce planning in call center and back-office operations. Simulate workload, staffing needs, and turnaround time.">
 
 <link rel="stylesheet" href="styles.css">
 
@@ -11,7 +12,6 @@
 
 </head>
 
-<body>
 <body>
 
 <header class="suite-header">
@@ -38,15 +38,31 @@ Workforce Intelligence Suite
 </header>
 
 <div class="container">
-<div class="container">
 
-<header>
-<h1>BWIE</h1>
-<p>Basit Workforce Intelligence Engine</p>
+<header class="hero">
+<h1>Backlog Management Tool</h1>
+<p class="hero-subtitle">Workforce Planning & Workload Simulator</p>
+<p class="hero-authority">Built by Abdul Basit · WFM Lead at Everise<br>Specializing in Backlog &amp; Workforce Optimization</p>
 </header>
 
+<section class="analysis">
+<h2>What This Tool Does</h2>
+<ul>
+<li>Simulates backlog growth and workload accumulation</li>
+<li>Helps plan workforce requirements</li>
+<li>Improves turnaround time and operational efficiency</li>
+</ul>
+<p>This workforce management tool helps call centers and back-office teams optimize backlog, staffing, and workload distribution.</p>
+</section>
 
-<section class="model-select">
+<section class="analysis">
+<h2>Key WFM Concepts</h2>
+<p><strong>Backlog:</strong> Pending work not completed within target timelines.</p>
+<p><strong>Throughput:</strong> Work completed over a given time.</p>
+<p><strong>Capacity:</strong> Work agents can handle based on availability.</p>
+</section>
+
+<section class="model-select section-block">
 
 <h2>Model</h2>
 
@@ -58,17 +74,17 @@ Workforce Intelligence Suite
 </section>
 
 
-<section class="inputs">
+<section class="inputs section-block">
 
 <h2>Inputs</h2>
 
 <label>Call Volume (CSV)</label>
-<textarea id="volumeInput">
+<textarea id="volumeInput" placeholder="Enter comma-separated values (e.g., 50,75,100)">
 50,75,100,120,140,150,160,155,150,145,140,135
 </textarea>
 
 <label>Agent Staffing (CSV)</label>
-<textarea id="staffInput">
+<textarea id="staffInput" placeholder="Enter comma-separated values (e.g., 20,20,25)">
 20,20,25,25,30,30,30,30,28,28,26,26
 </textarea>
 
@@ -85,13 +101,14 @@ Workforce Intelligence Suite
 <input id="slaInput" type="number" value="20">
 
 <button id="runBtn">Run Simulation</button>
+<p class="microcopy">Simulates real-world backlog and staffing performance based on your inputs.</p>
 
 </section>
 
 
-<section class="metrics">
+<section class="metrics section-block">
 
-<h2>Operational Metrics</h2>
+<h2>Metrics</h2>
 
 <div class="grid">
 
@@ -120,7 +137,7 @@ Workforce Intelligence Suite
 </section>
 
 
-<section class="charts">
+<section class="charts section-block">
 
 <h2>Charts</h2>
 
@@ -131,7 +148,7 @@ Workforce Intelligence Suite
 </section>
 
 
-<section>
+<section class="section-block">
 
 <h2>Interval Results</h2>
 
@@ -150,31 +167,14 @@ Workforce Intelligence Suite
 
 </section>
 
-
-<!-- HOW ENGINE WORKS -->
-
-<section class="engine-info">
-
-<h2>How BWIE Works</h2>
-
-<p>
-BWIE simulates contact center performance across 15-minute intervals using queue dynamics.
-It models the interaction between incoming call demand, agent staffing levels,
-average handle time, customer patience and shrinkage to estimate service performance.
-</p>
-
-<p>
-Each interval calculates the effective staffing capacity, queue buildup,
-expected wait time and resulting service level.
-Unlike traditional Erlang models, this approach approximates real operational behavior
-by allowing queues and workload to propagate across intervals.
-</p>
-
+<section class="analysis">
+<h2>FAQ</h2>
+<p><strong>What is backlog in WFM?</strong><br>Backlog in WFM is the volume of pending work that remains unprocessed within a target timeline.</p>
+<p><strong>How do you reduce backlog?</strong><br>Reduce backlog by balancing staffing with incoming volume, prioritizing tasks, and improving process efficiency.</p>
 </section>
 
-
 <footer>
-<p>BWIE Simulation Lab — Abdul Basit</p>
+<p>Built by Abdul Basit · Workforce Management Lead at Everise<br>Focused on Backlog and Workforce Efficiency<br>Part of the Workforce Intelligence Suite by Abdul Basit</p>
 </footer>
 
 </div>
